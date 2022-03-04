@@ -3,6 +3,7 @@ import * as soutils from './tsmodules/soutils'
 import * as fridautils from './tsmodules/fridautils'
 // load compiled ts module
 import * as libcocos2dExtractAssets from './tsmodules/libcocos2dExtractAssets'
+import { Console } from 'console';
 
 let frida_log_callback =  new NativeCallback(function(sp:NativePointer){
     let s = sp.readUtf8String();
@@ -229,6 +230,18 @@ var test0 = ()=>{
         console.log(JSON.stringify(cm));
         new NativeFunction(cm.test, 'void', [])();
     });
+}
+var test0 = ()=>{
+    // get apk path 
+    Java.perform(function(){
+        let current_application = Java.use('android.app.ActivityThread').currentApplication();
+        var context = current_application.getApplicationContext();
+        let packageName=context.getPackageName();
+        let pm = context.getPackageManager();
+        let ai = pm.getApplicationInfo(packageName,0);
+        let apkpath = ai.publicSourceDir;
+        console.log('packageName', packageName, apkpath.value);
+    })
 }
 
 console.log('hello world')
