@@ -35,6 +35,6 @@ com.sincetimes.fknsg -- Package name
     cd . 
     frida -U -l _agent.js -n  "放开那三国（送貂蝉）" --no-pause 
 ```  
-This script will list all encypted assets files in the package, and try to decrypt the first one, (You can mod the code do dump all files)
+This script will list all encypted assets files in the package, and try to decrypt them, and dump decrypted files to your Android device.   
 
 
