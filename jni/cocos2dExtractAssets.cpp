@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <vector>
+
 extern "C" void _frida_log(char*); 
 extern "C" void _frida_exit();
 extern "C" void _frida_hexdump(void*, unsigned int);
@@ -41,17 +42,20 @@ extern "C" void* _ZN7cocos2d18CCFileUtilsAndroid11getFileDataEPKcS2_Pm(void*, vo
 
 //////////////////////////////////////////////////                
 // utils functions
-struct RBTreeNode {
-    // unknonw  
-    unsigned char _unknown[0x10];                 //offset 0x00
-    void*    pred ; // pointer to red node        //offset 0x10
-    void*    pblack; // pointer to black node     //offset 0x18
-    void*    pstring;// pointer to key            //offset 0x20
-};
 //////////////////////////////////////////////////                
 // global variables
 extern "C" int test(char* apkName, char* path) 
 {
+
+#ifdef  __arm__  // for 32-bit ARM
+    LOG_INFO(0x100,"arch armeabi ");
+#else
+    #ifdef __aarch64__ //  64-bit ARM
+        LOG_INFO(0x100,"arch aach64 ");
+    #else
+#error "unsupported architecture "
+    #endif
+#endif
     // get a list of all encrypt files
     std::vector<std::string> encryptFiles; 
     {
@@ -59,9 +63,19 @@ extern "C" int test(char* apkName, char* path)
         std::string sApkname(apkName);
         std::string sPath( path);
         // print some info for debug
+#ifdef __arm__
         LOG_INFO(0x100, "sizeof(int) %d", sizeof(int));
         LOG_INFO(0x100, "sizeof(long) %d", sizeof(long));
         LOG_INFO(0x100, "sizeof(void*) %d", sizeof(void*));
+#else
+    #ifdef __aarch64__ //  64-bit ARM
+        LOG_INFO(0x100, "sizeof(int)   %ld", sizeof(int));
+        LOG_INFO(0x100, "sizeof(long)  %ld", sizeof(long));
+        LOG_INFO(0x100, "sizeof(void*) %ld", sizeof(void*));
+    #else
+#error "unsupported architecture "
+    #endif
+#endif
 
         pzipfile = malloc(ZIPFILE_OBJ_SIZE);
         if(!pzipfile){
@@ -70,10 +84,19 @@ extern "C" int test(char* apkName, char* path)
         }
         _ZN7cocos2d7ZipFileC2ERKSsS2_(pzipfile, &sApkname, &sPath);
         // ZipFilePrivate *_data;
-        void* _data = *(void**)(&((unsigned char*)pzipfile)[4]);
         // typedef std::map<std::string, struct ZipEntryInfo> FileListContainer;
         //FileListContainer fileList;
+#ifdef __arm__
+        void* _data = *(void**)(&((unsigned char*)pzipfile)[4]);
         void* fileList = (void*)(&((unsigned char*)_data)[4]);
+#else
+    #ifdef __aarch64__
+        void* _data = *(void**)(&((unsigned char*)pzipfile)[8]);
+        void* fileList = (void*)(&((unsigned char*)_data)[8]);
+    #else
+#error "unsupported architecture "
+    #endif
+#endif
         typedef std::map<std::string, void*> FileListContainer;
         typedef std::map<std::string, void*>::iterator FileListContainerIterator;
         FileListContainer* filelistContainer= (FileListContainer*) fileList;
@@ -109,7 +132,7 @@ extern "C" int test(char* apkName, char* path)
                 _frida_hexdump(data, 0x20);
                 free(data);
             }
-            break;
+            break; // only for test
         }
     }
     LOG_INFO(0x100, "go here , test ok");

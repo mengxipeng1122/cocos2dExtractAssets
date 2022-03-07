@@ -65,7 +65,16 @@ function resolveSymbol(sym_name:string, loadedSyms?:{[key:string]:NativePointer}
 export function loadSo(info:SoInfoType, syms?:{[key:string]:NativePointer}, libs?:string[], dir?:string):LoadSoInfoType
 {
     // sanity check
-    if(info.machine_type=='ARM' && Process.arch!='arm') throw `archtecture mismatch ${info.machine_type}/${Process.arch}`
+    let arch = Process.arch;
+    if(arch=='arm'){
+        if(info.machine_type!='ARM')  throw `archtecture mismatch ${info.machine_type}/${Process.arch}`
+    }
+    else if (arch=='arm64'){
+        if(info.machine_type!='AARCH64')  throw `archtecture mismatch ${info.machine_type}/${Process.arch}`
+    }
+    else{
+        throw `unsupported archtecture ${arch}`
+    }
 
     let buff = Memory.alloc(info.load_size);
     Memory.protect(buff, info.load_size, 'rwx');
@@ -116,6 +125,32 @@ export function loadSo(info:SoInfoType, syms?:{[key:string]:NativePointer}, libs
                 if(p!=undefined&&!p.equals(0)){
                     buff.add(r.address).writePointer(p) ;
                 }
+            }
+            else if (r.type==257) { // R_AARCH64_ABS64
+                if(r.size != 64) throw `only support for 64bits now`
+                let p = resolveSymbol(r.sym_name, loadedSyms, syms, libs);
+                if(p!=undefined&&!p.equals(0)){
+                    buff.add(r.address).writePointer(p);
+                }
+            }
+            else if (r.type==1025) { // R_AARCH64_GLOB_DA
+                if(r.size != 64) throw `only support for 64bits now`
+                let p = resolveSymbol(r.sym_name, loadedSyms, syms, libs);
+                if(p!=undefined&&!p.equals(0)){
+                    buff.add(r.address).writePointer(p);
+                }
+            }
+            else if (r.type==1026) { // R_AARCH64_JUMP_SL
+                if(r.size != 64) throw `only support for 64bits now`
+                let p = resolveSymbol(r.sym_name, loadedSyms, syms, libs);
+                if(p!=undefined&&!p.equals(0)){
+                    buff.add(r.address).writePointer(p);
+                }
+            }
+            else if (r.type==1027) { // R_AARCH64_RELATIV
+                if(r.size != 64) throw `only support for 64bits now`
+                let p =buff.add(r.address).readPointer();
+                buff.add(r.address).writePointer(p.add(buff));
             }
             else{
                 throw `unhandle relocation type ${r.type}`

@@ -2,7 +2,8 @@
 import * as soutils from './tsmodules/soutils'
 import * as fridautils from './tsmodules/fridautils'
 // load compiled ts module
-import * as libcocos2dExtractAssets from './tsmodules/libcocos2dExtractAssets'
+import * as libcocos2dExtractAssets_arm32 from './tsmodules/libcocos2dExtractAssets_arm32'
+import * as libcocos2dExtractAssets_arm64 from './tsmodules/libcocos2dExtractAssets_arm64'
 import { Console } from 'console';
 
 let frida_log_callback =  new NativeCallback(function(sp:NativePointer){
@@ -246,8 +247,18 @@ var test0 = ()=>{
             let soname = 'libgame.so';
             console.log('arch', Process.arch);
             console.log('andriod version', Java.androidVersion);
+            let info;
+            if(Process.arch=='arm'){
+                info = libcocos2dExtractAssets_arm32.info;
+            }
+            else if(Process.arch=='arm64'){
+                info = libcocos2dExtractAssets_arm64.info;
+            }
+            else{
+                throw `unsupported arm ${Process.arch}`
+            }
             let m = Process.getModuleByName(soname);
-            let loadm = soutils.loadSo(libcocos2dExtractAssets.info,{
+            let loadm = soutils.loadSo(info,{
                 _frida_log : frida_log_callback,
                 _frida_exit: frida_exit_callback,
                 _frida_hexdump: frida_hexdump_callback,
@@ -258,7 +269,6 @@ var test0 = ()=>{
             // debug
             //if(false)
             {
-                fridautils.dumpMemory(loadm.buff.add(0x1ae6c));
             }
             {
                 let fun = new NativeFunction(loadm.syms.test, 'void', ['pointer' ,'pointer']);
