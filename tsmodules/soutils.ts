@@ -160,7 +160,7 @@ export function loadSo(info:SoInfoType, syms?:{[key:string]:NativePointer}, libs
 //    Memory.protect(buff, info.load_size, 'r-x');
 
     // dump for debug
-    //if(false)
+    if(false)
     {
         let fn = '/data/data/com.sincetimes.fknsg/dump.'+info.name+'.'+buff+'.dump'
         fridautils.dumpMemoryToFile(buff, info.load_size, fn)
