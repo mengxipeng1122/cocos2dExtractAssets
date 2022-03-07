@@ -10,21 +10,9 @@ extern "C" void _frida_log(char*);
 extern "C" void _frida_exit();
 extern "C" void _frida_hexdump(void*, unsigned int);
 
-//extern int snprintf(char *str, int size, const char *format, ...);
-//extern void *malloc(unsigned int size);
-//extern void free(void *ptr);
-//extern void string_ctor(void* ptr, char* s, void* ); // constructor of std::string class
-// extern void string_dtor(void* ptr); // destructor of std::string class, need not to call ?
-extern "C" void _ZN7cocos2d7ZipFileC2ERKSsS2_(void*, void*, void*); // cocos2d::ZipFile::ZipFile(std::string const&,std::string const&)
-extern "C" void _ZN7cocos2d7ZipFileD2Ev(void*);// __fastcall cocos2d::ZipFile::~ZipFile(cocos2d::ZipFile *__hidden this)
-extern "C" void* _ZN7cocos2d7ZipFile11getFileDataERKSsPm(void*, void*, unsigned long *); // cocos2d::ZipFile::getFileData(std::string const&, unsigned long *)
-
-extern "C" void* _ZN7cocos2d11CCFileUtils15sharedFileUtilsEv(); // _DWORD cocos2d::CCFileUtils::sharedFileUtils(cocos2d::CCFileUtils *__hidden this) 
-extern "C" void* _ZN7cocos2d18CCFileUtilsAndroid11getFileDataEPKcS2_Pm(void*, void*, void*, void*); // _DWORD __cdecl cocos2d::CCFileUtilsAndroid::getFileData(cocos2d::CCFileUtilsAndroid *__hidden this, const char *, const char *, unsigned int *)
 
 //////////////////////////////////////////////////                
 // help macros
-#define ZIPFILE_OBJ_SIZE 0x20
 
 #define LOG_INFO(N,fmt, args...) do{                                     \
     char buf[N];                                                         \
@@ -38,6 +26,31 @@ extern "C" void* _ZN7cocos2d18CCFileUtilsAndroid11getFileDataEPKcS2_Pm(void*, vo
     _frida_log(buf);                                                     \
     _frida_exit();                                                       \
 }while(0)                                                               
+
+#define ZIPFILE_OBJ_SIZE 0x20
+namespace cocos2d
+{
+    struct ZipFile
+    {
+        unsigned char _dummy[ZIPFILE_OBJ_SIZE];
+        // extern "C" void _ZN7cocos2d7ZipFileC2ERKSsS2_(void*, void*, void*); // cocos2d::ZipFile::ZipFile(std::string const&,std::string const&)
+        ZipFile(std::string const&, std::string const&);
+        // extern "C" void* _ZN7cocos2d7ZipFile11getFileDataERKSsPm(void*, void*, unsigned long *); // cocos2d::ZipFile::getFileData(std::string const&, unsigned long *)
+        unsigned char* getFileData(std::string const&, unsigned long *);
+        //_ZN7cocos2d7ZipFileD2Ev(pzipfile);
+        ~ZipFile();
+    };
+    struct CCFileUtils
+    {
+        //extern "C" void* _ZN7cocos2d11CCFileUtils15sharedFileUtilsEv(); 
+        static void* sharedFileUtils(); 
+    };
+    struct CCFileUtilsAndroid
+    {
+        // extern "C" void* _ZN7cocos2d18CCFileUtilsAndroid11getFileDataEPKcS2_Pm(void*, void*, void*, void*);
+        unsigned char * getFileData( const char *, const char *, unsigned long*);
+    };
+}
 
 
 //////////////////////////////////////////////////                
@@ -59,7 +72,6 @@ extern "C" int test(char* apkName, char* path)
     // get a list of all encrypt files
     std::vector<std::string> encryptFiles; 
     {
-        void* pzipfile = NULL;
         std::string sApkname(apkName);
         std::string sPath( path);
         // print some info for debug
@@ -77,12 +89,9 @@ extern "C" int test(char* apkName, char* path)
     #endif
 #endif
 
-        pzipfile = malloc(ZIPFILE_OBJ_SIZE);
-        if(!pzipfile){
-            LOG_INFO(0x80, "malloc failed");
-            _frida_exit();
-        }
-        _ZN7cocos2d7ZipFileC2ERKSsS2_(pzipfile, &sApkname, &sPath);
+        cocos2d::ZipFile zipfile(sApkname, sPath);
+        cocos2d::ZipFile* pzipfile = &zipfile;
+
         // ZipFilePrivate *_data;
         // typedef std::map<std::string, struct ZipEntryInfo> FileListContainer;
         //FileListContainer fileList;
@@ -105,8 +114,9 @@ extern "C" int test(char* apkName, char* path)
             const char* fname = it->first.c_str();
             std::string name(fname);
             unsigned long datalen=0l;
-            unsigned char* data = (unsigned char*)_ZN7cocos2d7ZipFile11getFileDataERKSsPm((void*)pzipfile, (void*)&name, &datalen);
+            unsigned char* data = pzipfile->getFileData(name, &datalen);
             if(data!=NULL){
+                // _frida_hexdump(data, 0x20);
                 if(!memcmp(data, "\xfe\xfe\xfe\xfe", 4)){
                     encryptFiles.push_back(it->first);
                     LOG_INFO(0x100,"add  %s %lu ", fname, datalen);
@@ -114,19 +124,18 @@ extern "C" int test(char* apkName, char* path)
                 free(data); 
             }
         }
-        _ZN7cocos2d7ZipFileD2Ev(pzipfile);
-        free(pzipfile);
         pzipfile =NULL;
     }
     // try to decrypt files
     {
-        void* pFileUtils =  _ZN7cocos2d11CCFileUtils15sharedFileUtilsEv(); 
+        cocos2d::CCFileUtilsAndroid* pFileUtils =  (cocos2d::CCFileUtilsAndroid*)cocos2d::CCFileUtils::sharedFileUtils();
         if(pFileUtils==NULL) LOG_ERR(0x100, " can not get pFileUtils ");
+        LOG_INFO(0x100, "%p",pFileUtils);
         for(std::vector<std::string>::iterator it = encryptFiles.begin(); it!=encryptFiles.end(); it++)
         {
             const char* fname = it->c_str();
             unsigned long datalen=0l;
-            void* data =  _ZN7cocos2d18CCFileUtilsAndroid11getFileDataEPKcS2_Pm(pFileUtils, (void*)fname, (void*)"rb", &datalen);
+            void* data =  pFileUtils->getFileData(fname, "rb", &datalen);
             if(data!=NULL){
                 LOG_INFO(0x100," fname %s %lu ", fname, datalen);
                 _frida_hexdump(data, 0x20);
