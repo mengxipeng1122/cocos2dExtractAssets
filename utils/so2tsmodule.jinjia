@@ -1,23 +1,25 @@
 
 export var info = 
 {
-    name      : "{{ info['name'] }}",
+    machine_type        : "{{ info['machine_type'] }}",
 
-    load_size : {{ info['load_size'] }},
+    name                : "{{ info['name'] }}",
 
-    loads     : [
+    load_size           : {{ info['load_size'] }},
+
+    loads               : [
         {% for l in info['loads'] %}
         {{ l   }} , 
         {% endfor %}
     ], 
 
-    exported_symbols : [
+    exported_symbols    : [
         {% for e in info['exported_symbols'] %}
             {{ e   }} , 
         {% endfor %}
     ],
 
-    relocations  : [
+    relocations         : [
         {% for r in info['relocations'] %}
             {{ r   }} , 
         {% endfor %}

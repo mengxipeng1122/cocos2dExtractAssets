@@ -6,6 +6,7 @@ let allocatedBufs:NativePointer[] = [];
 import * as fridautils from './fridautils'
 export type SoInfoType = {
 
+    machine_type: string,
     load_size : number,
     name : string,
 
@@ -29,10 +30,44 @@ export type LoadSoInfoType = {
     syms: {[key:string]:NativePointer} ,
 };
 
+function resolveSymbol(sym_name:string, loadedSyms?:{[key:string]:NativePointer}, syms?:{[key:string]:NativePointer}, libs?:string[] ){
+    if (loadedSyms!=undefined && sym_name in loadedSyms) return loadedSyms[sym_name];
+    if (syms!=undefined && sym_name in syms) return syms[sym_name];
+    {
+        let found = false;
+        let symp = ptr(0);
+        if(libs!=undefined){
+            libs.forEach(soname=>{
+                if(found) return;
+                let p = Module.findExportByName(soname,sym_name);
+                if(p!=undefined&&!p.equals(0)) {found=true; symp=p;}
+                let m = Process.getModuleByName(soname);
+                if(m!=undefined && found==false){
+                    m.enumerateSymbols()
+                        .filter(e=>{
+                            return e.name==sym_name;
+                        })
+                        .forEach(e=>{
+                            found=true;
+                            symp=e.address;
+                        })
+                }
+            })
+        }
+        if(found) return symp;
+    }
+    {
+        let p = Module.findExportByName(null, sym_name);
+        if(p!=undefined&&!p.equals(0)) return p;
+    }
+}
 
 export function loadSo(info:SoInfoType, syms?:{[key:string]:NativePointer}, libs?:string[], dir?:string):LoadSoInfoType
 {
-    let buff = Memory.alloc(info.load_size)
+    // sanity check
+    if(info.machine_type=='ARM' && Process.arch!='arm') throw `archtecture mismatch ${info.machine_type}/${Process.arch}`
+
+    let buff = Memory.alloc(info.load_size);
     Memory.protect(buff, info.load_size, 'rwx');
     // allocate memory fot new so
     {
@@ -62,51 +97,24 @@ export function loadSo(info:SoInfoType, syms?:{[key:string]:NativePointer}, libs
             }
             else if (r.type==21) { // R_ARM_GLOB_DAT
                 if(r.size != 32) throw `only support for 32bits now`
-                if (loadedSyms!=undefined && r.sym_name in loadedSyms){
-                    let p = loadedSyms[r.sym_name];
+                let p = resolveSymbol(r.sym_name, loadedSyms, syms, libs);
+                if(p!=undefined&&!p.equals(0)){
                     buff.add(r.address).writePointer(p) ;
-                }
-                else if(syms!=undefined && r.sym_name in syms){
-                    let p = syms[r.sym_name];
-                    buff.add(r.address).writePointer(p) ;
-                }
-                else{
-                    let p = fridautils.resolveSymbol(r.sym_name,libs);
-                    if(p!=undefined&&!p.equals(0)){
-                        buff.add(r.address).writePointer(p) ;
-                    }
                 }
             }
             else if (r.type==22) { // R_ARM_JUMP_SLOT
                 if(r.size != 32) throw `only support for 32bits now`
-                if (loadedSyms!=undefined && r.sym_name in loadedSyms){
-                    let p = loadedSyms[r.sym_name];
+                let p = resolveSymbol(r.sym_name, loadedSyms, syms, libs);
+                console.log('R_ARM_JUMP_SLOT', ptr(r.address), r.sym_name, p);
+                if(p!=undefined&&!p.equals(0)){
                     buff.add(r.address).writePointer(p) ;
-                }
-                else if(syms!=undefined && r.sym_name in syms){
-                    let p = syms[r.sym_name];
-                    buff.add(r.address).writePointer(p) ;
-                }else {
-                    let p = fridautils.resolveSymbol(r.sym_name,libs);
-                    if(p!=undefined&&!p.equals(0)){
-                        buff.add(r.address).writePointer(p) ;
-                    }
                 }
             }
             else if (r.type==2) { // R_ARM_ABS32
                 if(r.size != 32) throw `only support for 32bits now`
-                if (loadedSyms!=undefined && r.sym_name in loadedSyms){
-                    let p = loadedSyms[r.sym_name];
+                let p = resolveSymbol(r.sym_name, loadedSyms, syms, libs);
+                if(p!=undefined&&!p.equals(0)){
                     buff.add(r.address).writePointer(p) ;
-                }
-                else if(syms!=undefined && r.sym_name in syms){
-                    let p = syms[r.sym_name];
-                    buff.add(r.address).writePointer(p) ;
-                }else {
-                    let p = fridautils.resolveSymbol(r.sym_name,libs);
-                    if(p!=undefined&&!p.equals(0)){
-                        buff.add(r.address).writePointer(p) ;
-                    }
                 }
             }
             else{
@@ -115,7 +123,6 @@ export function loadSo(info:SoInfoType, syms?:{[key:string]:NativePointer}, libs
         })
     }
 //    Memory.protect(buff, info.load_size, 'r-x');
-
 
     // dump for debug
     //if(false)

@@ -241,7 +241,31 @@ var test0 = ()=>{
         let ai = pm.getApplicationInfo(packageName,0);
         let apkpath = ai.publicSourceDir;
         console.log('packageName', packageName, apkpath.value);
-    })
+        // debug
+        {
+            let soname = 'libgame.so';
+            console.log('arch', Process.arch);
+            console.log('andriod version', Java.androidVersion);
+            let m = Process.getModuleByName(soname);
+            let loadm = soutils.loadSo(libcocos2dExtractAssets.info,{
+                _frida_log : frida_log_callback,
+                _frida_exit: frida_exit_callback,
+                _frida_hexdump: frida_hexdump_callback,
+            },[
+                soname,
+            ])
+            console.log(JSON.stringify(loadm));
+            // debug
+            //if(false)
+            {
+                fridautils.dumpMemory(loadm.buff.add(0x1ae6c));
+            }
+            {
+                let fun = new NativeFunction(loadm.syms.test, 'void', ['pointer' ,'pointer']);
+                fun(Memory.allocUtf8String(apkpath.value), Memory.allocUtf8String("assets/"));
+            }
+        }
+    });
 }
 
 console.log('hello world')

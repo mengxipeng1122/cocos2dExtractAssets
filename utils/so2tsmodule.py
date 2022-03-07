@@ -21,6 +21,8 @@ def main():
     ##################################################
     # extract info from so file 
     binary = lief.parse(open(args.input,'rb'))
+    # machine_type
+    machine_type = binary.header.machine_type.name
     # loads
     name = os.path.basename(args.input);
     loads= []
@@ -69,11 +71,12 @@ def main():
     t = Template(open(templateFn).read())
     s = t.render(
         info = {
-        'name'              : name     ,
-        'loads'             : loads    ,
-        'load_size'         : load_size,
-        'exported_symbols'  : exported_symbols,
-        'relocations'       : relocations,
+        'machine_type'      : machine_type      ,
+        'name'              : name              ,
+        'loads'             : loads             ,
+        'load_size'         : load_size         ,
+        'exported_symbols'  : exported_symbols  ,
+        'relocations'       : relocations       ,
     });
     open(args.output,'w').write(s)
     #assert False, 'exit'
