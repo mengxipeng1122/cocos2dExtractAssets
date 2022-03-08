@@ -7,7 +7,7 @@ Game name: 放开那三国
 Package name : com.sincetimes.fknsg  
 
 # How to use
-## a. Install downloaded apk file to your Android device, and start frida server on your Android device.[How to setup your Android device with frida server](https://frida.re/docs/android/)  
+## a. Install downloaded apk file to your Android device, and start frida server on your Android device.[How to setup your Android device with frida server](https://frida.re/docs/android/) . And besure your android device have a good Intenet connection, or the app will not start.
 ## b. Connet your android device to you computer, and compile Android JNI code   
 ```bash
     cd jni
