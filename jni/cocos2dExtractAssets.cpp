@@ -174,7 +174,7 @@ extern "C" int test(void* baseaddress,  char* outdir)
         cocos2d::ZipFile* pzipfile = (cocos2d::ZipFile*)*(void**)&(((unsigned char*)baseaddress)[0x608E68]);
 #else
     #ifdef __aarch64__ //  64-bit ARM
-        cocos2d::ZipFile* pzipfile = (cocos2d::ZipFile*)*(void**)&(((unsigned char*)baseaddress)[0x608E68]);
+        cocos2d::ZipFile* pzipfile = (cocos2d::ZipFile*)*(void**)&(((unsigned char*)baseaddress)[0x9223A0]);
     #else
 #error "unsupported architecture "
     #endif
