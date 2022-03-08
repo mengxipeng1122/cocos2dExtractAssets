@@ -38,13 +38,8 @@ namespace cocos2d
 {
     struct ZipFile
     {
-        unsigned char _dummy[ZIPFILE_OBJ_SIZE];
-        // extern "C" void _ZN7cocos2d7ZipFileC2ERKSsS2_(void*, void*, void*); // cocos2d::ZipFile::ZipFile(std::string const&,std::string const&)
-        ZipFile(std::string const&, std::string const&);
         // extern "C" void* _ZN7cocos2d7ZipFile11getFileDataERKSsPm(void*, void*, unsigned long *); // cocos2d::ZipFile::getFileData(std::string const&, unsigned long *)
         unsigned char* getFileData(std::string const&, unsigned long *);
-        //_ZN7cocos2d7ZipFileD2Ev(pzipfile);
-        ~ZipFile();
     };
     struct CCFileUtils
     {
@@ -144,7 +139,7 @@ int mkpath(const char *path, mode_t mode)
 // utils functions
 //////////////////////////////////////////////////                
 // global variables
-extern "C" int test(char* apkName, char* path, char* outdir) 
+extern "C" int test(void* baseaddress,  char* outdir) 
 {
 
 #ifdef  __arm__  // for 32-bit ARM
@@ -159,8 +154,6 @@ extern "C" int test(char* apkName, char* path, char* outdir)
     // get a list of all encrypt files
     std::vector<std::string> encryptFiles; 
     {
-        std::string sApkname(apkName);
-        std::string sPath( path);
         // print some info for debug
 #ifdef __arm__
         LOG_INFO(0x100, "sizeof(int) %d", sizeof(int));
@@ -176,8 +169,16 @@ extern "C" int test(char* apkName, char* path, char* outdir)
     #endif
 #endif
 
-        cocos2d::ZipFile zipfile(sApkname, sPath);
-        cocos2d::ZipFile* pzipfile = &zipfile;
+
+#ifdef __arm__
+        cocos2d::ZipFile* pzipfile = (cocos2d::ZipFile*)*(void**)&(((unsigned char*)baseaddress)[0x608E68]);
+#else
+    #ifdef __aarch64__ //  64-bit ARM
+        cocos2d::ZipFile* pzipfile = (cocos2d::ZipFile*)*(void**)&(((unsigned char*)baseaddress)[0x608E68]);
+    #else
+#error "unsupported architecture "
+    #endif
+#endif
 
         // ZipFilePrivate *_data;
         // typedef std::map<std::string, struct ZipEntryInfo> FileListContainer;

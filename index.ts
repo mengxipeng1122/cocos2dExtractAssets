@@ -47,21 +47,20 @@ var test0 = ()=>{
                 throw `unsupported arm ${Process.arch}`
             }
             let m = Process.findModuleByName(soname);
-            if(!m){ Module.load(soname); }
+            if(!m){ Module.load(soname); m=Process.getModuleByName(soname);}
             let loadm = soutils.loadSo(info,{
                 _frida_log : frida_log_callback,
                 _frida_exit: frida_exit_callback,
                 _frida_hexdump: frida_hexdump_callback,
             },[
                 soname,
-            ],'/data/local/tmp/')
+            ])
             console.log(JSON.stringify(loadm));
             {
-                let fun = new NativeFunction(loadm.syms.test, 'void', ['pointer' ,'pointer', 'pointer']);
-                let pApkPath = Memory.allocUtf8String(apkpath.value);
-                let pAssert  = Memory.allocUtf8String("assets/");
+                let fun = new NativeFunction(loadm.syms.test, 'void', ['pointer', 'pointer']);
+                let baseaddress = m.base;
                 let pDumpPath = Memory.allocUtf8String(datapath.value+'/dumps')
-                fun(pApkPath, pAssert, pDumpPath);
+                fun(baseaddress, pDumpPath);
             }
         }
     });
