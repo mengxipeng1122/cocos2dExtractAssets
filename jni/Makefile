@@ -9,5 +9,13 @@ clean:
 	${NDKPATH}/ndk-build clean
 
 install: all
-	adb push ../libs/armeabi-v7a/*.so /data/local/tmp
+	if `adb shell getprop ro.product.cpu.abilist | grep arm64-v8a >/dev/null`;  then   \
+        adb push ../libs/arm64-v8a//*.so /data/local/tmp;                   \
+    else  \
+        if `adb shell getprop ro.product.cpu.abilist | grep armeabi-v7a >/dev/null`;  then \
+            adb push ../libs/armeabi-v7a/*.so /data/local/tmp;  \
+        else \
+            echo 'unsupported cpu'; exit -1; \
+        fi \
+    fi
 

@@ -6,7 +6,7 @@
   "main": "",
   "scripts": {
     "prepare": "npm run build",
-    "build": " ./utils/so2tsmodule.py -o  tsmodules/libcocos2dExtractAssets_arm32.ts ./libs/armeabi-v7a/libcocos2dExtractAssets.so && ./utils/so2tsmodule.py -o  tsmodules/libcocos2dExtractAssets_arm64.ts ./libs/arm64-v8a/libcocos2dExtractAssets.so &&  frida-compile index.ts -o _agent.js -c",
+    "build": " ./utils/so2tsmodule.py --no-content -o  tsmodules/libcocos2dExtractAssets_arm32.ts ./libs/armeabi-v7a/libcocos2dExtractAssets.so && ./utils/so2tsmodule.py --no-content -o  tsmodules/libcocos2dExtractAssets_arm64.ts ./libs/arm64-v8a/libcocos2dExtractAssets.so &&  frida-compile index.ts -o _agent.js -c",
     "watch": "frida-compile agent/index.ts -o _agent.js -w"
   },
   "devDependencies": {

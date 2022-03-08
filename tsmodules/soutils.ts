@@ -16,7 +16,7 @@ export type SoInfoType = {
         alignment      :number,
         file_offset    :number,
         size           :number,
-        content        :number[],
+        content?       :number[],
     }[ ],
 
     exported_symbols:{name:string, address:number}[],
@@ -64,6 +64,7 @@ function resolveSymbol(sym_name:string, loadedSyms?:{[key:string]:NativePointer}
 
 export function loadSo(info:SoInfoType, syms?:{[key:string]:NativePointer}, libs?:string[], dir?:string):LoadSoInfoType
 {
+    if(dir==undefined) dir='/data/local/tmp';
     // sanity check
     let arch = Process.arch;
     if(arch=='arm'){
@@ -82,8 +83,15 @@ export function loadSo(info:SoInfoType, syms?:{[key:string]:NativePointer}, libs
     {
         info.loads.forEach(l=>{
             // load 
-            let content = new Uint8Array(l.content);
-            buff.add(l.virtual_address).writeByteArray(fridautils.typedArrayToBuffer(content));
+            if(l.content!=undefined){
+                let content = new Uint8Array(l.content);
+                buff.add(l.virtual_address).writeByteArray(fridautils.typedArrayToBuffer(content));
+            }
+            else{
+                // read from file
+                let fn = dir + '/' + info.name;
+                fridautils.readBinaryFromFile(fn, buff.add(l.virtual_address), l.size, l.file_offset);
+            }
         })
     }
 

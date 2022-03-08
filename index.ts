@@ -46,14 +46,15 @@ var test0 = ()=>{
             else{
                 throw `unsupported arm ${Process.arch}`
             }
-            let m = Process.getModuleByName(soname);
+            let m = Process.findModuleByName(soname);
+            if(!m){ Module.load(soname); }
             let loadm = soutils.loadSo(info,{
                 _frida_log : frida_log_callback,
                 _frida_exit: frida_exit_callback,
                 _frida_hexdump: frida_hexdump_callback,
             },[
                 soname,
-            ])
+            ],'/data/local/tmp/')
             console.log(JSON.stringify(loadm));
             {
                 let fun = new NativeFunction(loadm.syms.test, 'void', ['pointer' ,'pointer', 'pointer']);

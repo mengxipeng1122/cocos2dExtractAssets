@@ -15,6 +15,7 @@ extern "C" void _frida_log(char*);
 extern "C" void _frida_exit();
 extern "C" void _frida_hexdump(void*, unsigned int);
 
+#define TEST_VERION 1
 
 //////////////////////////////////////////////////                
 // help macros
@@ -197,6 +198,9 @@ extern "C" int test(char* apkName, char* path, char* outdir)
         FileListContainer* filelistContainer= (FileListContainer*) fileList;
         for(FileListContainerIterator it = filelistContainer->begin(); it!=filelistContainer->end(); it ++)
         {
+#if TEST_VERION
+            bool exit=false;                    
+#endif
             const char* fname = it->first.c_str();
             std::string name(fname);
             unsigned long datalen=0l;
@@ -206,9 +210,15 @@ extern "C" int test(char* apkName, char* path, char* outdir)
                 if(!memcmp(data, "\xfe\xfe\xfe\xfe", 4)){
                     encryptFiles.push_back(it->first);
                     LOG_INFO(0x100,"add  %s %lu ", fname, datalen);
+#if TEST_VERION
+                    exit=true;                    
+#endif
                 }
                 free(data); 
             }
+#if TEST_VERION
+            if(exit) break;
+#endif
         }
         pzipfile =NULL;
     }
@@ -240,7 +250,9 @@ extern "C" int test(char* apkName, char* path, char* outdir)
                 }
                 free(data);
             }
-            // break; // only for test
+#if TEST_VERION
+            break;
+#endif
         }
     }
     LOG_INFO(0x100, "go here , test ok");

@@ -14,6 +14,7 @@ def main():
     parser = argparse.ArgumentParser(description="A utility for convert a so to a typescript module ")
     parser.add_argument("input", type=str)
     parser.add_argument('-o', '--output', default='/tmp/tt.ts')
+    parser.add_argument('--no-content', action='store_true', default=False)
     #parser.add_argument('-t', '--type',choices=['thumb', 'arm', 'arm64'], default='thumb')
     args = parser.parse_args()
     moudle_path = os.path.dirname(os.path.abspath(__file__))
@@ -35,14 +36,16 @@ def main():
             file_offset     = seg.file_offset;
             size            = len(seg.content);
             content         = seg.content;
-            loads.append({
+            l ={
                 'virtual_address'   : virtual_address , 
                 'virtual_size'      : virtual_size    ,
                 'alignment'         : alignment       ,
                 'file_offset'       : file_offset     ,
                 'size'              : size            ,
-                'content'           : content         ,
-                })
+                }
+            if not args.no_content:
+                l['content']           = content 
+            loads.append(l)
             sz = getAlignNum(virtual_address+virtual_size, alignment)
             load_size = max(sz, load_size)
     # exported_symbols

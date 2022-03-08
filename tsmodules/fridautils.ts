@@ -1,6 +1,7 @@
 
 'use strict';
 
+import { spawn } from 'child_process';
 import { type } from 'os';
 import * as path from 'path'
 
@@ -381,4 +382,38 @@ export function resolveSymbol(name:string, libs?:string[])
         let result = JSON.stringify(_e);
         console.log(` resolve symbol ${name} failed with error ${result}`);
     }
+}
+
+export function readBinaryFromFile(fn:string, p:NativePointer, sz:number, offset:number){
+    let cm = new CModule(`
+        typedef unsigned int size_t;
+        extern void _frida_err(char * );
+        extern int fseek(void *stream, long offset, int whence);
+        extern size_t fread(void *ptr, size_t size, size_t nmemb, void *stream);
+        extern int fclose(void *stream);
+        extern void *fopen( char *pathname,  char *mode);
+        #define SEEK_SET 0
+        int fun(char* fn, void*p, unsigned int sz, unsigned int offset ){
+            void* fp = fopen(fn, "rb");
+            if(!fp) _frida_err("can not open file ");
+            fseek(fp, offset, SEEK_SET);
+            fread(p, 1, sz, fp);
+            fclose(fp);
+            return 0;
+        }
+    `,{
+        _frida_err : new NativeCallback(function(sp:NativePointer){
+            let s = sp.readUtf8String();
+            console.log(s)
+            throw `error occured`;
+            return ;
+        },'void',['pointer']),
+        fopen : Module.getExportByName(null,'fopen'),
+        fseek : Module.getExportByName(null,'fseek'),
+        fread : Module.getExportByName(null,'fread'),
+        fclose: Module.getExportByName(null,'fclose'),
+    })
+
+    let fun = new NativeFunction(cm.fun, 'int',['pointer', 'pointer', 'uint', 'uint']);
+    return fun(Memory.allocUtf8String(fn), p, sz, offset);
 }
