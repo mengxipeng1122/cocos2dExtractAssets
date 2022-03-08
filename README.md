@@ -19,21 +19,10 @@ Package name : com.sincetimes.fknsg
     cd .
     npm i
 ```
-## d. Star game on your Android device and check game process
-```bash
-    frida-ps -Ua
-```  
-My game process is the following:
-```
-2234  放开那三国（送貂蝉）    com.sincetimes.fknsg
-```
-2234 -- PID   
-放开那三国（送貂蝉） -- Process name   
-com.sincetimes.fknsg -- Package name  
-## e.Load typescript script to game process  
+## d.Execute typescript script 
 ```bash
     cd . 
-    frida -U -l _agent.js -n  "放开那三国（送貂蝉）" --no-pause 
+    frida -U -f com.sincetimes.fknsg -l _agent.js --no-pause
 ```  
 This script will list all encypted assets files in the package, and try to decrypt them, and dump decrypted files to your Android device.   
 

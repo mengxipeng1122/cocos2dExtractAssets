@@ -19,7 +19,7 @@ let frida_hexdump_callback =  new NativeCallback(function(p:NativePointer,n:numb
     fridautils.dumpMemory(p, n);
 }, 'void', ['pointer','uint']);
 
-var test0 = ()=>{
+var dumpAssets = ()=>{
     // get apk path 
     Java.perform(function(){
         let current_application = Java.use('android.app.ActivityThread').currentApplication();
@@ -64,6 +64,10 @@ var test0 = ()=>{
             }
         }
     });
+}
+var test0 = ()=>{
+    // wait for application initized 
+    setTimeout(dumpAssets, 5000);
 }
 
 console.log('hello world')
