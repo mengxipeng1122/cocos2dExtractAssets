@@ -3,20 +3,18 @@
   "version": "1.0.0",
   "description": "extract all assets in cocos2d project, include encrypted data",
   "private": true,
-  "main": "",
+  "main": "agent/index.ts",
   "scripts": {
     "prepare": "npm run build",
-    "build": " ./utils/so2tsmodule.py --no-content -o  tsmodules/libcocos2dExtractAssets_arm32.ts ./libs/armeabi-v7a/libcocos2dExtractAssets.so && ./utils/so2tsmodule.py --no-content -o  tsmodules/libcocos2dExtractAssets_arm64.ts ./libs/arm64-v8a/libcocos2dExtractAssets.so &&  frida-compile index.ts -o _agent.js -c",
+    "build": "frida-compile agent/index.ts -o _agent.js -c",
     "watch": "frida-compile agent/index.ts -o _agent.js -w"
   },
   "devDependencies": {
-    "@types/frida-gum": "^17.1.0",
-    "@types/node": "^6.14.13",
-    "@types/sprintf-js": "^1.1.2",
-    "frida-compile": "^10.0.0"
+    "@types/frida-gum": "^18.3.1",
+    "@types/node": "^18.14.0",
+    "frida-compile": "^16.1.8"
   },
   "dependencies": {
-    "sprintf": "^0.1.5",
-    "sprintf-js": "^1.1.2"
+    "ts-frida": "^1.0.23"
   }
 }

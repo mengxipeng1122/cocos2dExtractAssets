@@ -5,6 +5,8 @@
     "allowJs": true,
     "noEmit": true,
     "strict": true,
-    "esModuleInterop": true
-  }
+    "esModuleInterop": true,
+    "moduleResolution": "node16"
+  },
+  "exclude": ["_agent.js"]
 }

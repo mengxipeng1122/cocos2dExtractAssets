@@ -12,10 +12,9 @@
 #include <vector>
 
 extern "C" void _frida_log(char*); 
-extern "C" void _frida_exit();
 extern "C" void _frida_hexdump(void*, unsigned int);
 
-#define TEST_VERION 1
+#define TEST_VERION 0
 
 //////////////////////////////////////////////////                
 // help macros
@@ -26,12 +25,6 @@ extern "C" void _frida_hexdump(void*, unsigned int);
     _frida_log(buf);                                                     \
 }while(0)                                                               
 
-#define LOG_ERR(N,fmt, args...) do{                                      \
-    char buf[N];                                                         \
-    snprintf(buf,N, "[%s:%d]" fmt , __FILE__, __LINE__, ##args);         \
-    _frida_log(buf);                                                     \
-    _frida_exit();                                                       \
-}while(0)                                                               
 
 #define ZIPFILE_OBJ_SIZE 0x20
 namespace cocos2d
@@ -95,7 +88,10 @@ static int do_mkdir(const char *path, mode_t mode)
 
 int writeDataToFile(const char* path, unsigned char* data, unsigned long sz){
     FILE* fp = fopen(path,"wb");
-    if(!fp) LOG_ERR(0x100, " can not open file %s for writing ", path);
+    if(!fp) {
+        LOG_INFO(0x100, " can not open file %s for writing ", path);
+        return -1;
+    } 
     unsigned long wrote = fwrite(data, 1, sz, fp);
     if(wrote != sz) LOG_INFO(0x100, " wrote failed %lu / %lu ", wrote, sz);
     fclose(fp);
@@ -174,7 +170,7 @@ extern "C" int test(void* baseaddress,  char* outdir)
         cocos2d::ZipFile* pzipfile = (cocos2d::ZipFile*)*(void**)&(((unsigned char*)baseaddress)[0x608E68]);
 #else
     #ifdef __aarch64__ //  64-bit ARM
-        cocos2d::ZipFile* pzipfile = (cocos2d::ZipFile*)*(void**)&(((unsigned char*)baseaddress)[0x9223A0]);
+        cocos2d::ZipFile* pzipfile = (cocos2d::ZipFile*)*(void**)&(((unsigned char*)baseaddress)[0x92f3A0]);
     #else
 #error "unsupported architecture "
     #endif
@@ -183,6 +179,7 @@ extern "C" int test(void* baseaddress,  char* outdir)
         // ZipFilePrivate *_data;
         // typedef std::map<std::string, struct ZipEntryInfo> FileListContainer;
         //FileListContainer fileList;
+        _frida_hexdump(pzipfile, 0x40);
 #ifdef __arm__
         void* _data = *(void**)(&((unsigned char*)pzipfile)[4]);
         void* fileList = (void*)(&((unsigned char*)_data)[4]);
@@ -226,7 +223,10 @@ extern "C" int test(void* baseaddress,  char* outdir)
     // try to decrypt files
     {
         cocos2d::CCFileUtilsAndroid* pFileUtils =  (cocos2d::CCFileUtilsAndroid*)cocos2d::CCFileUtils::sharedFileUtils();
-        if(pFileUtils==NULL) LOG_ERR(0x100, " can not get pFileUtils ");
+        if(pFileUtils==NULL) {
+            LOG_INFO(0x100, " can not get pFileUtils ");
+            return -2;
+        } 
         LOG_INFO(0x100, "%p",pFileUtils);
         for(std::vector<std::string>::iterator it = encryptFiles.begin(); it!=encryptFiles.end(); it++)
         {
