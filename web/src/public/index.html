@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Frida Web Interface</title>
+    <title>Fknsg Web Interface</title>
     <link rel="stylesheet" href="style.css">
+    <script src="splitter.js"></script>
 </head>
 <body>
     <div class="container">
@@ -14,15 +15,14 @@
                 <div class="search-container">
                     <input type="text" id="search-input" placeholder="Search assets...">
                 </div>
-                <div id="assets-list" class="assets-list">
+                <div id="assets-list">
                     <!-- Assets list will be populated here -->
                 </div>
             </div>
-            <div id="splitter" class="splitter"></div>
+            <div id="splitter"></div>
             <div class="right-panel">
-                <div id="asset-details" class="asset-details">
-                    <!-- Asset details will be shown here -->
-                    <div id = "asset-details-placeholder" class="placeholder-text">Select an asset to view details</div>
+                <div id="asset-details">
+                    <div id="asset-details-placeholder">Select an asset to view details</div>
                 </div>
             </div>
         </div>
