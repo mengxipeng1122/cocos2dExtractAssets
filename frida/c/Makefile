@@ -1,7 +1,12 @@
 
 
-ifndef NDKPATH
-    $(error NDKPATH is not defined. Please set the NDKPATH variable to the path of your Android NDK installation.)
+ifndef NDK_PATH
+    $(error NDK_PATH is not defined. Please set the NDK_PATH variable to the path of your Android NDK installation.)
+endif
+
+# check if NDK_PATH is valid
+ifeq ($(shell test -d $(NDK_PATH) && echo "yes"),)
+    $(error NDK_PATH is not a valid directory: $(NDK_PATH))
 endif
 
 install: build
@@ -17,7 +22,7 @@ install: build
 
 
 build:
-	${NDKPATH}/ndk-build V=1
+	${NDK_PATH}/ndk-build V=1
 
 clean:
-	${NDKPATH}/ndk-build clean
+	${NDK_PATH}/ndk-build clean

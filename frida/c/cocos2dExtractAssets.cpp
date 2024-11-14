@@ -10,6 +10,7 @@
 #include <map>
 #include <dirent.h>
 #include <vector>
+#include <errno.h>
 
 extern "C" void _frida_log(char*); 
 extern "C" void _frida_hexdump(void*, unsigned int);

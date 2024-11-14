@@ -29,6 +29,7 @@ var dumpAssets = ()=>{
         }
     );
         
+    if(0)
     {
         const m = Process.getModuleByName('libgame.so');
         let fun = new NativeFunction(loadm.symbols.test, 'void', ['pointer', 'pointer']);
