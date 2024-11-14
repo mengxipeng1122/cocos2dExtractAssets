@@ -29,6 +29,15 @@ Package name : com.sincetimes.fknsg
 ```  
 Now you can see the web interface in your browser. Visit http://localhost:3000
 
+## How to use
+The web interface will enumerate all assets within the game. This process may take some time due to the extensive number of assets and is dependent on the performance of your Android device.
+Once the asset list is populated, you can search for assets by name; the search function is case-insensitive.
+Clicking on an asset will display its details in the right panel.
+If the asset is an image, you can click on the image to view it in a new tab.
+If the asset is a text file, clicking on the text will also open it in a new tab.
+For all other types of assets, a hexdump will be displayed in the right panel.
+
+
 ## Screenshots
 - ![001](./screenshots/001.png)
 - ![002](./screenshots/002.png)
