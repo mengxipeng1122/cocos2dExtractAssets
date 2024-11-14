@@ -1,3 +1,6 @@
 
 c/libs/
 c/obj/
+
+agent/index.ts
+agent/modinfos

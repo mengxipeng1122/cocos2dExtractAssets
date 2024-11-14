@@ -97,3 +97,4 @@ c/obj/
 c/libs/
 
 .pyenv
+bin

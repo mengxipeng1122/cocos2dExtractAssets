@@ -2,7 +2,7 @@
 import 'ts-frida'
 import * as path from 'path'
 // import * as libcocos2dExtractAssets_arm32 from './libcocos2dExtractAssets_arm32'
-import {mod as libcocos2dExtractAssets_arm64} from './libcocos2dExtractAssets_arm64.js'
+import {mod as libcocos2dExtractAssets_arm64} from './modinfos/libcocos2dExtractAssets_arm64.js'
 
 
 var dumpAssets = ()=>{
