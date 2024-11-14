@@ -260,3 +260,65 @@ extern "C" int test(void* baseaddress,  char* outdir)
     LOG_INFO(0x100, "go here , test ok");
     return 0;
 }
+
+std::map<std::string, void*>* getFileListContainer (void* baseaddress) {
+
+#if defined(__arm__)
+    cocos2d::ZipFile* pzipfile = (cocos2d::ZipFile*)*(void**)&(((unsigned char*)baseaddress)[0x608E68]);
+#elif defined(__aarch64__)
+    cocos2d::ZipFile* pzipfile = (cocos2d::ZipFile*)*(void**)&(((unsigned char*)baseaddress)[0x92f3A0]);
+#else
+#error "unsupported architecture "
+#endif
+
+    void* _data = ((void**)(pzipfile))[1];
+    void* fileList = &((void**)(_data))[1];
+
+    auto* filelistContainer= (std::map<std::string, void*>*) fileList;
+    return filelistContainer;
+}
+
+
+extern "C" __attribute__((visibility("default")))
+int getAssetsList(
+    void* baseaddress,
+    void (*cb)(const char* path)
+) {
+
+    auto* filelistContainer= getFileListContainer(baseaddress);
+    for(auto it = filelistContainer->begin(); it!=filelistContainer->end(); it ++) {
+        const char* fname = it->first.c_str();
+        cb(fname);
+    }
+    return 0;
+}
+
+extern "C" __attribute__((visibility("default")))
+int getAssetBinary(
+    void* baseaddress,
+    const char* path,
+    void (*cb)(unsigned char* data, unsigned long sz)
+) {
+    LOG_INFO(0x100, "getAssetsBinary for \'%s\' ", path);
+    auto* filelistContainer= getFileListContainer(baseaddress);
+    auto it = filelistContainer->find(path);
+    if(it == filelistContainer->end()) {
+        return -1;
+    }
+    cocos2d::CCFileUtilsAndroid* pFileUtils =  (cocos2d::CCFileUtilsAndroid*)cocos2d::CCFileUtils::sharedFileUtils();
+    if(pFileUtils==NULL) {
+        LOG_INFO(0x100, " can not get pFileUtils ");
+        return -2;
+    } 
+    const char* fname = path;
+    unsigned long datalen=0l;
+    void* data =  pFileUtils->getFileData(fname, "rb", &datalen);
+    if(data==NULL) {
+        LOG_INFO(0x100, " can not get file data for %s ", fname);
+        return -3;
+    }
+    LOG_INFO(0x100, "get file data for %s %lu ", fname, datalen);
+    cb((unsigned char*)data, datalen);
+    free(data);
+    return 0;
+}

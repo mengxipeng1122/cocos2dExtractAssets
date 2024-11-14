@@ -10,7 +10,7 @@ ifeq ($(shell test -d $(NDK_PATH) && echo "yes"),)
 endif
 
 install: build
-	if `adb shell getprop ro.product.cpu.abilist | grep arm64-v8a >/dev/null`;  then   \
+	@if `adb shell getprop ro.product.cpu.abilist | grep arm64-v8a >/dev/null`;  then   \
         adb push ./libs/arm64-v8a//*.so /data/local/tmp;                   \
     else  \
         if `adb shell getprop ro.product.cpu.abilist | grep armeabi-v7a >/dev/null`;  then \

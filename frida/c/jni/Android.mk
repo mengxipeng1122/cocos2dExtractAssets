@@ -8,6 +8,7 @@ LOCAL_LDLIBS :=
 LOCAL_ARM_MODE := thumb
 LOCAL_ALLOW_UNDEFINED_SYMBOLS := true
 LOCAL_CFLAGS= -fno-exceptions -fno-stack-protector -z execstack
+LOCAL_CPPFLAGS += -fvisibility=hidden 
 include $(BUILD_SHARED_LIBRARY)
 
 

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frida Web Interface</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Fknsg Web Interface</h1>
+        <div class="content-wrapper">
+            <div class="left-panel">
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Search assets...">
+                </div>
+                <div id="assets-list" class="assets-list">
+                    <!-- Assets list will be populated here -->
+                </div>
+            </div>
+            <div id="splitter" class="splitter"></div>
+            <div class="right-panel">
+                <div id="asset-details" class="asset-details">
+                    <!-- Asset details will be shown here -->
+                    <div id = "asset-details-placeholder" class="placeholder-text">Select an asset to view details</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="scripts/index.js"></script>
+</body>
+</html>

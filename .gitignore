@@ -75,7 +75,6 @@ bower_components
 .dynamodb/
 
 # TypeScript output
-*.js
 *.js.map
 
 # Frida specific
