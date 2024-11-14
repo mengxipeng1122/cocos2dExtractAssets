@@ -8,24 +8,30 @@ Package name : com.sincetimes.fknsg
 
 # How to use
 ## a. Install downloaded apk file to your Android device, and start frida server on your Android device.[How to setup your Android device with frida server](https://frida.re/docs/android/) . And besure your android device have a good Intenet connection, or the app will not start.
-## b. Connet your android device to you computer, and compile Android JNI code   
+## b. Set up your NDK environment
 ```bash
     export NDKPATH=<your ndk path for android-ndk-r15c>
-    cd jni
-    make install # this command will push compiled .so to your android device
 ```
-## c. Install required node modules
+## c. Connet your android device to you computer, and compile frida agent code
 ```bash
-    cd .
+    cd frida
+    make  # this command will compile frida agent code, and push .so to your android device
+```
+## d. Install required node modules
+```bash
+    cd web
     npm i
 ```
-## d.Execute typescript script 
+## e. Start web server
 ```bash
-    cd . 
-    frida -U -f com.sincetimes.fknsg -l _agent.js --no-pause
+    cd web
+    npm run dev
 ```  
-This script will list all encypted assets files in the package, and try to decrypt them, and dump decrypted files to your Android device.   
+Now you can see the web interface in your browser. Visit http://localhost:3000
 
+## Screenshots
+- ![001](./screenshots/001.png)
+- ![002](./screenshots/002.png)
 
 ## trouble shooting
 1. If you see error message like this:
